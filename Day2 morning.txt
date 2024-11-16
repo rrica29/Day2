@@ -1,0 +1,190 @@
+Add network > VMnet10 OK
+Uncheck use local DHCP. edit 100.0.0.0
+Click sdwan ovf
+Check drive free space. 
+Select drive, create folder. 
+Import
+
+====
+
+VMware
+Network1 NAT
+Network2 Custom
+admin eve
+
+====
+
+right click cloud > start
+hover on cloud 100.0.0.128 32768
+
+====
+
+@cloud
+
+en
+conf t
+hostname cloud
+int lo 0 
+ip add 8.8.8.8 255.255.255.255
+exit
+
+int vlan 1
+no shut
+ip add 100.0.0.254 255.255.255.0
+router bgp 65001
+no synchro
+bgp log-neighbor-changes
+network 8.8.8.8 mask 255.255.255.255
+network 100.0.0.0 mask 255.255.255.0
+neighbor 100.0.0.107 remote-as 65001
+neighbor 100.0.0.109 remote-as 65001
+neighbor 100.0.0.111 remote-as 65001
+no auto-summary
+end
+wr
+
+=====
+
+@Site1
+en
+conf t
+hostname site1
+no ip domain-lookup
+int f0/0
+no shut
+ip add 172.16.10.2 255.255.255.0
+exit
+int lo0
+no shut
+ip add 1.1.1.1 255.255.255.255
+end
+wr
+
+conf t
+router ospf 1
+network 172.16.10.0 0.0.0.255 area 0
+network 1.1.1.1 0.0.0.0 area 0
+
+
+@Site2
+en
+conf t
+hostname site2
+no ip domain-lookup
+int f0/0
+no shut
+ip add 172.16.20.2 255.255.255.0
+exit
+int lo0
+no shut
+ip add 2.2.2.2 255.255.255.255
+end
+wr
+
+conf t
+router ospf 1
+network 172.16.20.0 0.0.0.255 area 0
+network 2.2.2.2 0.0.0.0 area 0
+
+
+@Site3
+en
+conf t
+hostname site3
+no ip domain-lookup
+int f0/0
+no shut
+ip add 172.16.30.2 255.255.255.0
+exit
+int lo0
+no shut
+ip add 3.3.3.3 255.255.255.255
+end
+wr
+
+conf t
+router ospf 1
+network 172.16.30.0 0.0.0.255 area 0
+network 3.3.3.3 0.0.0.0 area 0
+
+======
+
+
+viptela
+https://100.0.0.101
+configuration > templates > click 3 dots > detach > move all to right > detach
+back to template > feature, add template > edge cloud > system > VE-SYTEM Global baud
+back to template > feature, add template > edge cloud > BANNER > VE-BANNER Global Login and MOTD
+back to template > feature, add template > edge cloud > VPN > BR-VE-VPN-VPN0 GLOBAL vpn 0 NAME GLOBAL TRANSPORT VPN + 0.0.0.0/0 NEXT HOP + DEVICE SPECIFIC 
+back to template > feature, add template > edge cloud > VPN Interface Ethernet > BR-VE-VPNINT-VPN0-G0 
+Shutdown NO
+IPv4 Configuration
+Static
+IPv4 Address DEVICE SPECIFIC
+Tunnel Interface On 
+Color BIZ-INTERNET
+Allow Service ON
+SSH ON
+NETCONF ON
+NAT TAB ON
+back to template > feature, add template > edge cloud > VPN > BR-VE-VPN-VPN512 
+VPN 512
+Name 512
+back to template > feature, add template > edge cloud > VPN Interface Ethernet > BR-VE-VPNINT-VPN0-G0
+Shutdown No 
+Interface Name eth0
+IPV6 DYNAMIC
+back to template > feature, add template > edge cloud > BGP > BR-VE-BGP-VPN0
+Shutdown No 
+AS Number 65001
+Address Family IPV4-UNICAST
+NEIGHBOR TAB 100.0.0.254 } 65001 MORE 
+Address Family On Address Family IPV4-UNICAST
+back to template cREATE TEMPLATE FROM FEATURE > VEDGECLOUD nAME BR-VE-TEMP
+Basic Information
+System *
+Transport & Management VPN
+VPN 0 *
+BGP
+VPN Interface
+Additional VPN 0 Templates
+VPN 512 *
+VPN Interface
+Additional Templates
+Banner 
+configuration > templates > click 3 dots ON NEW TEMPLATE > detach > move 3 to right > ATTACH
+3 DOTS UNA > UPDATE DEVICE TEMPLATE IP ADDRESS AND IP ADDRESS 100.0.0.254 CONFIG
+
+
+CONSOLE DEVICE
+100.0.0.128 32777 32778 32779
+Add config
+
+make service vpn = 1
+back to template > feature, add template > edge cloud > VPN> BR-VE-VPN-VPN1
+VPN 1
+Name DATA VPN
+IPv4 0.0.0.0/0 > VPN
+Enable VPN On
+back to template > feature, add template > edge cloud > VPN INTERFACE > BR-VE-VPNINT-VPN1-G1 
+Shutdown NO
+Interface Name ge0/1
+IPv4 Address DEVICE specific
+back to template > feature, add template > edge cloud > OSPF > BR-VE-OSPF-VPN1
++OMP every edge to see on hq
++Area 0 > interface [Interface Name ge01]
+Advance
+Originate On
+Always On
+Edit device template > right click 3 dots > 172.16.20.1/24
+gitna 172.16.10.1/24
+172.16.30.1/24
+
+show ip ospf nei
+
+https://r3deped1-my.sharepoint.com/personal/gene_gener_r3-1_deped_gov_ph/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fgene%5Fgener%5Fr3%2D1%5Fdeped%5Fgov%5Fph%2FDocuments%2Fcerts%2F%23TeamRivan%20Stuffs%2FTeamRivan%2DSDWAN%2Dprocedures%2Epdf&parent=%2Fpersonal%2Fgene%5Fgener%5Fr3%2D1%5Fdeped%5Fgov%5Fph%2FDocuments%2Fcerts%2F%23TeamRivan%20Stuffs&ga=1
+
+file:///C:/Users/Administrator/Downloads/TeamRivan-SDWAN-procedures.pdf
+
+https://bit.ly/rivan-images
+#C1sc0123
